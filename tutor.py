@@ -5,7 +5,9 @@ Handles:
   - Loading the ChromaDB vector store (built by ingest.py)
   - Embedding queries and retrieving relevant chunks
   - Building prompts with conversation history
-  - Calling the OpenAI API and returning (answer, sources)
+  - Calling the LLM (Groq or OpenAI) and returning (answer, sources)
+
+Set LLM_PROVIDER in .env to "groq" (default, free) or "openai".
 
 Typical usage (from app.py or the REPL):
 
@@ -22,9 +24,26 @@ import pathlib
 from dotenv import load_dotenv
 import chromadb
 from chromadb.utils import embedding_functions
-from openai import OpenAI
 
 load_dotenv()
+
+# ── Provider selection ─────────────────────────────────────────────────────────
+# Set LLM_PROVIDER=groq or LLM_PROVIDER=openai in your .env
+PROVIDER = os.environ.get("LLM_PROVIDER", "groq").lower()
+
+DEFAULT_MODELS = {
+    "groq": "llama-3.3-70b-versatile",
+    "openai": "gpt-4o-mini",
+}
+
+if PROVIDER == "groq":
+    from groq import Groq as _LLMClient
+    _API_KEY = os.environ.get("GROQ_API_KEY")
+    _KEY_NAME = "GROQ_API_KEY"
+else:
+    from openai import OpenAI as _LLMClient
+    _API_KEY = os.environ.get("OPENAI_API_KEY")
+    _KEY_NAME = "OPENAI_API_KEY"
 
 # ── Paths & constants ──────────────────────────────────────────────────────────
 BASE_DIR = pathlib.Path(__file__).parent
@@ -50,9 +69,15 @@ helpful, and cite the source material when relevant.\
 
 
 class Tutor:
-    def __init__(self, model: str = "gpt-4o-mini"):
-        self.model = model
-        self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    def __init__(self, model: str | None = None):
+        self.model = model or DEFAULT_MODELS[PROVIDER]
+        if not _API_KEY:
+            raise EnvironmentError(
+                f"{_KEY_NAME} is not set. "
+                f"Copy .env.example to .env and add your key."
+            )
+        self.client = _LLMClient(api_key=_API_KEY)
+        print(f"Using provider: {PROVIDER} | model: {self.model}")
         self._load_vectorstore()
         self.history: list[dict] = []  # list of {role, content} dicts
 

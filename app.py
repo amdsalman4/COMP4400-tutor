@@ -8,22 +8,22 @@ Then open http://localhost:7860 in your browser.
 """
 
 import gradio as gr
-from tutor import Tutor
+from tutor import Tutor, PROVIDER, DEFAULT_MODELS
 
 bot = Tutor()
 
 
-def respond(user_message: str, chat_history: list[list[str | None]]):
+def respond(user_message: str, chat_history: list[dict]):
     """Called by Gradio on each user submission."""
     if not user_message.strip():
         return chat_history, "", ""
 
     answer, sources = bot.ask(user_message)
 
-    # Format sources as a readable string for the sidebar panel
     sources_text = "\n".join(f"• {s}" for s in sources)
 
-    chat_history.append([user_message, answer])
+    chat_history.append({"role": "user", "content": user_message})
+    chat_history.append({"role": "assistant", "content": answer})
     return chat_history, "", sources_text
 
 
@@ -81,7 +81,8 @@ with gr.Blocks(title="COMP-4400 Tutor") as demo:
     )
 
     gr.Markdown(
-        "_Powered by OpenAI gpt-4o-mini · sentence-transformers/all-MiniLM-L6-v2 · ChromaDB_"
+        f"_Powered by {PROVIDER} / {DEFAULT_MODELS[PROVIDER]} · "
+        "sentence-transformers/all-MiniLM-L6-v2 · ChromaDB_"
     )
 
 

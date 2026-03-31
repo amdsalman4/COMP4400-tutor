@@ -7,4 +7,5 @@ langchain-text-splitters
 sentence-transformers
 gradio
 openai
+groq
 python-dotenv
