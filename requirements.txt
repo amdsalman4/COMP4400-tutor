@@ -3,6 +3,7 @@ chromadb
 langchain
 langchain-community
 langchain-openai
+langchain-text-splitters
 sentence-transformers
 gradio
 openai

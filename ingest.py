@@ -13,7 +13,7 @@ import pathlib
 import fitz  # PyMuPDF
 import chromadb
 from chromadb.utils import embedding_functions
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 BASE_DIR = pathlib.Path(__file__).parent

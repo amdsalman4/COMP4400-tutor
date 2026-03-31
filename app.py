@@ -33,7 +33,7 @@ def clear_chat():
 
 
 # ── UI ─────────────────────────────────────────────────────────────────────────
-with gr.Blocks(title="COMP-4400 Tutor", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="COMP-4400 Tutor") as demo:
     gr.Markdown(
         """
         # COMP-4400 Tutor
@@ -50,7 +50,6 @@ with gr.Blocks(title="COMP-4400 Tutor", theme=gr.themes.Soft()) as demo:
             chatbot = gr.Chatbot(
                 label="Chat",
                 height=520,
-                bubble_full_width=False,
             )
             with gr.Row():
                 msg_box = gr.Textbox(
@@ -68,7 +67,6 @@ with gr.Blocks(title="COMP-4400 Tutor", theme=gr.themes.Soft()) as demo:
                 label="",
                 lines=18,
                 interactive=False,
-                show_copy_button=True,
             )
 
     # Wire up events
@@ -88,4 +86,4 @@ with gr.Blocks(title="COMP-4400 Tutor", theme=gr.themes.Soft()) as demo:
 
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(theme=gr.themes.Soft())
