@@ -1,1 +1,10 @@
 .env
+venv/
+__pycache__/
+*.pyc
+data/pdfs/*
+data/raw_text/*
+data/vectorstore/*
+!data/pdfs/.gitkeep
+!data/raw_text/.gitkeep
+!data/vectorstore/.gitkeep
