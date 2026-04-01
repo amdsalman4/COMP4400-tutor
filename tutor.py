@@ -67,6 +67,13 @@ question, say so clearly rather than guessing. Be concise, use examples where \
 helpful, and cite the source material when relevant.\
 """
 
+SYSTEM_PROMPT_NO_RAG = """\
+You are a helpful and knowledgeable tutor for COMP-4400 (Principles of \
+Programming Languages) at the University of Windsor. Answer questions about \
+the course topics using your general knowledge. Be concise and use examples \
+where helpful.\
+"""
+
 
 class Tutor:
     def __init__(self, model: str | None = None):
@@ -126,24 +133,27 @@ class Tutor:
             )
         return "\n\n".join(parts)
 
-    def ask(self, question: str) -> tuple[str, list[str]]:
+    def ask(self, question: str, use_rag: bool = True) -> tuple[str, list[str]]:
         """
         Ask a question. Returns (answer_text, list_of_source_strings).
-        Maintains conversation history internally.
+        Set use_rag=False to skip retrieval and use the LLM's general knowledge.
         """
-        chunks = self._retrieve(question)
-        context = self._build_context(chunks)
+        if use_rag:
+            chunks = self._retrieve(question)
+            context = self._build_context(chunks)
+            user_content = (
+                f"Context from course materials:\n{context}\n\nQuestion: {question}"
+            )
+            system = SYSTEM_PROMPT
+        else:
+            chunks = []
+            user_content = question
+            system = SYSTEM_PROMPT_NO_RAG
 
-        # User message that includes the retrieved context
-        user_content = (
-            f"Context from course materials:\n{context}\n\nQuestion: {question}"
-        )
-
-        # Keep only the last HISTORY_TURNS exchanges to avoid token bloat
         recent_history = self.history[-(HISTORY_TURNS * 2):]
 
         messages = (
-            [{"role": "system", "content": SYSTEM_PROMPT}]
+            [{"role": "system", "content": system}]
             + recent_history
             + [{"role": "user", "content": user_content}]
         )

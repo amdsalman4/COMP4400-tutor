@@ -13,14 +13,17 @@ from tutor import Tutor, PROVIDER, DEFAULT_MODELS
 bot = Tutor()
 
 
-def respond(user_message: str, chat_history: list[dict]):
+def respond(user_message: str, chat_history: list[dict], use_rag: bool):
     """Called by Gradio on each user submission."""
     if not user_message.strip():
         return chat_history, "", ""
 
-    answer, sources = bot.ask(user_message)
+    answer, sources = bot.ask(user_message, use_rag=use_rag)
 
-    sources_text = "\n".join(f"• {s}" for s in sources)
+    if use_rag:
+        sources_text = "\n".join(f"• {s}" for s in sources)
+    else:
+        sources_text = "RAG disabled — answer from model knowledge only."
 
     chat_history.append({"role": "user", "content": user_message})
     chat_history.append({"role": "assistant", "content": answer})
@@ -59,6 +62,10 @@ with gr.Blocks(title="COMP-4400 Tutor") as demo:
                     submit_btn=True,
                 )
                 clear_btn = gr.Button("Clear", variant="secondary", scale=1)
+            rag_toggle = gr.Checkbox(
+                value=True,
+                label="Enable RAG (uncheck to use model knowledge only)",
+            )
 
         with gr.Column(scale=1):
             gr.Markdown("### Retrieved Sources")
@@ -72,7 +79,7 @@ with gr.Blocks(title="COMP-4400 Tutor") as demo:
     # Wire up events
     msg_box.submit(
         fn=respond,
-        inputs=[msg_box, chatbot],
+        inputs=[msg_box, chatbot, rag_toggle],
         outputs=[chatbot, msg_box, sources_box],
     )
     clear_btn.click(
